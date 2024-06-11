@@ -2,7 +2,7 @@
 
 namespace Shared.Features.Import
 {
-    public interface IImportService : IComputeService
+    public interface IImportService 
     {
         Task ImportEmployeesFromExcel(Stream fileStream, CancellationToken cancellationToken);
     }

@@ -1,52 +1,44 @@
 ﻿using ClosedXML.Excel;
+using Microsoft.AspNetCore.Session;
 using Shared.Features.Employees;
 using Shared.Features.Import;
+using Stl.CommandR;
 using Stl.Fusion;
 
-namespace Service.Features.Import
+public class ImportService : IImportService
 {
-    public class ImportService : IImportService
+    private readonly ICommander _commander;
+
+    public ImportService(ICommander commander)
     {
-        private readonly IEmployeeService employeeService;
-        private readonly Session session;
+        _commander = commander;
+    }
 
-        public ImportService(IEmployeeService employeeService, Session session)
+    public async Task ImportEmployeesFromExcel(Stream excelStream, CancellationToken cancellationToken)
+    {
+        using var workbook = new XLWorkbook(excelStream);
+        var worksheet = workbook.Worksheet(1);
+        var rows = worksheet.RangeUsed().RowsUsed().Skip(1); // Skip header row
+
+        foreach (var row in rows)
         {
-            this.employeeService = employeeService;
-            this.session = Session.Default;
-        }
-
-        public async Task ImportEmployeesFromExcel(Stream fileStream, CancellationToken cancellationToken)
-        {
-            using var workbook = new XLWorkbook(fileStream);
-            var worksheet = workbook.Worksheet("Employees");
-            var rows = worksheet.RowsUsed().Skip(1); // Skipping header row
-
-            var employees = new List<CreateEmployeeCommand>();
-
-            foreach (var row in rows)
+            var employee = new CreateEmployeeCommand(Session.Default, new EmployeeView
             {
-                var employee = new CreateEmployeeCommand(session, new EmployeeView
-                {
-                    PayrollNumber = row.Cell(1).GetValue<string>(),
-                    Forenames = row.Cell(2).GetValue<string>(),
-                    Surname = row.Cell(3).GetValue<string>(),
-                    DateOfBirth = row.Cell(4).GetValue<DateTime>(),
-                    Telephone = row.Cell(5).GetValue<string>(),
-                    Mobile = row.Cell(6).GetValue<string>(),
-                    Address = row.Cell(7).GetValue<string>(),
-                    Address2 = row.Cell(8).GetValue<string>(),
-                    Postcode = row.Cell(9).GetValue<string>(),
-                    EmailHome = row.Cell(10).GetValue<string>(),
-                    StartDate = row.Cell(11).GetValue<DateTime>()
-                });
-                employees.Add(employee);
-            }
+                PayrollNumber = row.Cell(1).GetString(),
+                Forenames = row.Cell(2).GetString(),
+                Surname = row.Cell(3).GetString(),
+                DateOfBirth = row.Cell(4).GetDateTime().ToUniversalTime(),
+                Telephone = row.Cell(5).GetString(),
+                Mobile = row.Cell(6).GetString(),
+                Address = row.Cell(7).GetString(),
+                Address2 = row.Cell(8).GetString(),
+                Postcode = row.Cell(9).GetString(),
+                EmailHome = row.Cell(10).GetString(),
+                StartDate = row.Cell(11).GetDateTime().ToUniversalTime()
+            });
 
-            foreach (var employee in employees)
-            {
-                await employeeService.Create(employee, cancellationToken);
-            }
+            // Call the command handler using ICommander.Call(...)
+            await _commander.Call(employee, cancellationToken);
         }
     }
 }

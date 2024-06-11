@@ -4,9 +4,9 @@ using Shared.Features.Employees;
 using Shared.Infrastructures.Extensions;
 using Shared.Infrastructures;
 using Stl.CommandR;
-using System.IO.Packaging;
 using Shared.Features.Export;
-using Service.Features.Export;
+using Shared.Features.Import;
+using NSwag.Annotations;
 
 namespace Server.Controllers.Employee
 {
@@ -18,11 +18,13 @@ namespace Server.Controllers.Employee
 
         private readonly ICommander commander;
         private readonly IExportService exportService;
-        public Employee(IEmployeeService employeeService, ICommander commander, IExportService exportService)
+        private readonly IImportService importService;
+        public Employee(IEmployeeService employeeService, ICommander commander, IExportService exportService, IImportService importService)
         {
             this.employeeService = employeeService;
             this.commander = commander;
             this.exportService = exportService;
+            this.importService = importService;
         }
 
         [HttpPost]
@@ -63,6 +65,21 @@ namespace Server.Controllers.Employee
             var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
             var fileName = "Employees.xlsx";
             return File(stream, contentType, fileName);
+        }
+
+        [HttpPost("import")]
+        public async Task<IActionResult> ImportEmployeeFromExcel([OpenApiFile] IFormFile file, CancellationToken cancellationToken)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("File is empty.");
+
+            using var stream = new MemoryStream();
+            await file.CopyToAsync(stream, cancellationToken);
+            stream.Position = 0;
+
+            await importService.ImportEmployeesFromExcel(stream, cancellationToken);
+
+            return Ok("Employees imported successfully.");
         }
     }
 }

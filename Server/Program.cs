@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Server.Infrastructure.ServiceCollection;
 using Service.Data;
+using Shared.Features.Import;
 using Stl.Fusion;
 
 #region Builder
@@ -22,8 +23,9 @@ services.AddDbContext<AppDbContext>(options =>
     // Configure options for AuditDbContext
     options.UseNpgsql(cfg.GetConnectionString("Default"));
 });
-#endregion
 
+#endregion
+builder.Services.AddScoped<IImportService,ImportService>();
 //builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -41,6 +43,8 @@ builder.Services.AddCors(options =>
 #region STL.Fusion
 IComputedState.DefaultOptions.MustFlowExecutionContext = true;
 builder.Services.AddFusionServices();
+
+
 #endregion
 
 var app = builder.Build();

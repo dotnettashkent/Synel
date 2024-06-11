@@ -104,7 +104,7 @@ namespace Service.Features.Employees
             }
             await using var dbContext = await dbHub.CreateCommandDbContext(cancellationToken);
             var employee = await dbContext.Employees
-                .FirstOrDefaultAsync(x => x.Id == command.Entity!.Id);
+                .FirstOrDefaultAsync(x => x.Id == command.Entity.Id);
 
             if (employee == null) throw new ValidationException("EmployeeEntity Not Found");
 
