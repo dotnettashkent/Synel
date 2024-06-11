@@ -16,8 +16,4 @@
 		<PackageReference Include="EF.Audit.Core" Version="1.0.0" />
 		<PackageReference Include="Stl.Generators" Version="6.5.1" />
 	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Infrastructures\" />
-	</ItemGroup>
 </Project>

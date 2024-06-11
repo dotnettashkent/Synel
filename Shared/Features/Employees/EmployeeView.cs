@@ -22,4 +22,4 @@ namespace Shared.Features.Employees
         [property : DataMember] public DateTime StartDate { get; set; }
     }
 }
-}
+
