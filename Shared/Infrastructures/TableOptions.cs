@@ -14,7 +14,7 @@ namespace Shared.Infrastructures
 
         [property: DataMember] public int SortDirection { get; set; } = 1;
 
-        [property: DataMember] public string? search { get; set; }
+        [property: DataMember] public string? Search { get; set; }
 
     }
 }
