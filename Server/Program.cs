@@ -1,3 +1,5 @@
+using EF.Audit.Core;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Server.Infrastructure.ServiceCollection;
 using Service.Data;
@@ -10,6 +12,9 @@ var cfg = builder.Configuration;
 var env = builder.Environment;
 #endregion
 
+#region Database
+var dbType = cfg.GetValue<string>("DatabaseProviderConfiguration:ProviderType");
+services.AddDataBase<AppDbContext>(env, cfg, (DataBaseType)Enum.Parse(typeof(DataBaseType), dbType, true));
 
 // Register IDbContextFactory<AuditDbContext> before AddDataBase<AppDbContext>
 services.AddDbContext<AppDbContext>(options =>
@@ -17,7 +22,7 @@ services.AddDbContext<AppDbContext>(options =>
     // Configure options for AuditDbContext
     options.UseNpgsql(cfg.GetConnectionString("Default"));
 });
-
+#endregion
 
 //builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme);
 builder.Services.AddControllers();
@@ -47,8 +52,17 @@ if (app.Environment.IsDevelopment())
     app.UseOpenApi();
     app.UseSwaggerUi3();
 }
-
-
+else
+{
+    app.UseDeveloperExceptionPage();
+    app.UseOpenApi();
+    app.UseSwaggerUi3();
+}
+/*else
+{
+    app.UseExceptionHandler("/Error");
+    app.UseHsts();
+}*/
 
 app.UseHttpsRedirection();
 app.UseCors();
