@@ -56,7 +56,7 @@ namespace Server.Controllers.Employee
         }
 
         [HttpGet("export")]
-        public async Task<IActionResult> ExportSubscribersToExcel([FromQuery] TableOptions tableOptions, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> ExportEmployeesToExcel([FromQuery] TableOptions tableOptions, CancellationToken cancellationToken = default)
         {
             var stream = await exportService.ExportEmployeeToExcel(tableOptions, cancellationToken);
 
